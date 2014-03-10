@@ -16,6 +16,19 @@ Trie.prototype.learn = function(word, index){
   // A word does not necessarily end at a leaf.
   // You must mark nodes which are the ends of words,
   // so that the words can be reconstructed later.
+  if (!index) {var index = 0;}
+  var letter = word[index];
+
+  if (letter === undefined) {
+    this.isWord = true;
+  } else if ( this.characters[letter] ) {
+    index ++;
+    this.characters[letter].learn(word, index);
+  } else {
+    index ++;
+    this.characters[letter] = new Trie();
+    this.characters[letter].learn(word, index);
+  }
 };
 
 Trie.prototype.getWords = function(words, currentWord){
@@ -23,6 +36,19 @@ Trie.prototype.getWords = function(words, currentWord){
   // contained in this Trie.
   // it will use currentWord as a prefix,
   // since a Trie doesn't know about its parents.
+  words = words || [];
+  currentWord = currentWord || "";
+
+  if (this.isWord) {
+    words.push(currentWord);
+  }
+
+  for ( var letter in this.characters ) {
+    var newWord = currentWord + letter;
+    this.characters[letter].getWords(words, newWord);
+  }
+
+  return words;
 };
 
 Trie.prototype.find = function(word, index){
@@ -30,10 +56,31 @@ Trie.prototype.find = function(word, index){
   // which corresponds to the end of the passed in word.
 
   // Be sure to consider what happens if the word is not in this Trie.
+  if (!index) { var index = 0;}
+  var letter = word[index];
+
+  if (letter === undefined) {
+    return this;
+  } else if ( this.characters[letter] ) {
+    index ++;
+    return this.characters[letter].find(word, index);
+  } else {
+    return false;
+  }
 };
 
 Trie.prototype.autoComplete = function(prefix){
   // This function will return all completions 
   // for a given prefix.
   // It should use find and getWords.
+  var words = [];
+
+  if (this.find(prefix)){
+    var suffixes = this.find(prefix).getWords();
+    for (var i = 0; i < suffixes.length; ++i){
+      words.push( prefix + suffixes[i] );
+    }
+  }
+
+  return words;
 };
